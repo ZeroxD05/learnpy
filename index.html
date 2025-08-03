@@ -784,7 +784,7 @@
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
       <div class="modal-content">
-        <div id="resultIcon" class="result-icon">🎉</div>
+        <div id="resultIcon" class="result-icon"></div>
         <div id="resultTitle" class="result-title">Glückwunsch!</div>
         <div id="resultMessage"></div>
         <div id="xpEarned" class="xp-earned">+50 XP</div>
@@ -1234,7 +1234,7 @@
               </button>
               ${
                 username !== "Ata"
-                  ? `<button class="admin-action-btn delete-btn" onclick="deleteUser('${username}')">🗑️ Löschen</button>`
+                  ? `<button class="admin-action-btn delete-btn" onclick="deleteUser('${username}')">Löschen</button>`
                   : ""
               }
             </div>
@@ -1482,12 +1482,12 @@
         const message = document.getElementById("resultMessage");
         const xpDisplay = document.getElementById("xpEarned");
         if (passed) {
-          icon.textContent = "🎉";
+          icon.textContent = "";
           title.textContent = "Glückwunsch!";
           message.innerHTML = `Du hast das Level erfolgreich abgeschlossen!<br>
                                    Richtige Antworten: ${score}/${total} (${percentage}%)`;
         } else {
-          icon.textContent = "😔";
+          icon.textContent = "";
           title.textContent = "Nicht bestanden";
           message.innerHTML = `Du brauchst mindestens 70% um das Level zu bestehen.<br>
                                    Richtige Antworten: ${score}/${total} (${percentage}%)<br>
