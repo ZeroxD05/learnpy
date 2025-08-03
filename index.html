@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PyLearn - Python Lernen wie Duolingo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #333;
+        min-height: 100vh;
+        color: #333;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      /* Login Form */
+      .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .login-form {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        min-width: 350px;
+        max-width: 80vw;
+      }
+      .logo {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #000107;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 15px;
+        margin: 10px 0;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      .btn {
+        background-color: #667eea;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        margin: 10px 5px;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+      /* Main App */
+      .main-app {
+        display: none;
+      }
+      .header {
+        background-color: #b7a5a5;
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .level-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+      }
+      .xp-display {
+        background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+      }
+      .logout-btn {
+        border: none;
+        border-radius: 50%;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        margin: 10px 5px;
+      }
+      .logout-btn:hover {
+        transform: translateY(-2px);
+      }
+      .logout-btn:active {
+        transform: translateY(0);
+      }
+      .admin-btn {
+        background: linear-gradient(45deg, #9b59b6, #8e44ad);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+
+      /* Roadmap Design */
+      .roadmap-container {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .roadmap-path {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(
+          180deg,
+          #667eea 0%,
+          #764ba2 50%,
+          #4ecdc4 100%
+        );
+        border-radius: 2px;
+        transform: translateX(-50%);
+        z-index: 1;
+      }
+
+      .level-node {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-bottom: 80px;
+        z-index: 2;
+      }
+
+      .level-node:nth-child(even) {
+        flex-direction: row-reverse;
+      }
+
+      .level-card-roadmap {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        width: 280px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+        cursor: pointer;
+        border: 3px solid transparent;
+        position: relative;
+      }
+
+      .level-node:nth-child(odd) .level-card-roadmap {
+        margin-right: 60px;
+      }
+
+      .level-node:nth-child(even) .level-card-roadmap {
+        margin-left: 60px;
+      }
+
+      .level-card-roadmap.locked {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: rgba(200, 200, 200, 0.8);
+      }
+
+      .level-card-roadmap.locked:hover {
+        transform: none;
+      }
+
+      .level-card-roadmap.completed {
+        background: linear-gradient(
+          135deg,
+          rgba(168, 237, 193, 0.95) 0%,
+          rgba(254, 214, 227, 0.95) 100%
+        );
+        border-color: #27ae60;
+      }
+
+      .level-icon-large {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        text-align: center;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+
+      .level-title-roadmap {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      .level-description {
+        color: #666;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .level-progress-roadmap {
+        background: rgba(224, 224, 224, 0.5);
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 15px;
+      }
+
+      .level-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #db5252, #0bb525);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      .level-status {
+        text-align: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+
+      .level-status.completed {
+        color: #27ae60;
+      }
+
+      .level-status.available {
+        color: #667eea;
+      }
+
+      .level-status.locked {
+        color: #999;
+      }
+
+      /* Connection Dots */
+      .connection-dot {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border: 4px solid #667eea;
+        border-radius: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .level-node.completed .connection-dot {
+        background: #27ae60;
+        border-color: #27ae60;
+      }
+
+      .level-node.locked .connection-dot {
+        background: #ccc;
+        border-color: #999;
+      }
+
+      /* Quiz Interface */
+      .quiz-container {
+        display: none;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      .quiz-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+      .quiz-progress {
+        flex: 1;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        margin: 0 20px;
+        overflow: hidden;
+      }
+      .quiz-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4ecdc4, #44a08d);
+        transition: width 0.3s ease;
+      }
+      .question-container {
+        margin-bottom: 30px;
+      }
+      .question {
+        font-size: 1.5rem;
+        margin-bottom: 25px;
+        color: #333;
+      }
+      .code-block {
+        background: #1a1a1a;
+        color: #f8f8f2;
+        padding: 20px;
+        border-radius: 10px;
+        font-family: "Courier New", monospace;
+        margin: 15px 0;
+        overflow-x: auto;
+      }
+      .options {
+        display: grid;
+        gap: 15px;
+      }
+      .option {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        padding: 15px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 16px;
+      }
+      .option:hover {
+        border-color: #667eea;
+        background: #f0f0ff;
+      }
+      .option.selected {
+        border-color: #667eea;
+        background: #e6f3ff;
+      }
+      .option.correct {
+        border-color: #27ae60;
+        background: #d5f4e6;
+      }
+      .option.incorrect {
+        border-color: #e74c3c;
+        background: #ffeaea;
+      }
+      .quiz-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+      }
+      .back-btn {
+        background: #6c757d;
+      }
+      .check-btn {
+        background: linear-gradient(45deg, #27ae60, #2ecc71);
+      }
+      .next-btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      /* Admin Panel */
+      .admin-panel {
+        display: none;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e0e0e0;
+      }
+      .admin-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #9b59b6;
+      }
+      .search-container {
+        margin-bottom: 30px;
+      }
+      .search-input {
+        width: 100%;
+        max-width: 400px;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+      }
+      .search-input:focus {
+        outline: none;
+        border-color: #9b59b6;
+      }
+      .users-grid {
+        display: grid;
+        gap: 20px;
+      }
+      .user-card {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s;
+      }
+      .user-card:hover {
+        border-color: #9b59b6;
+        box-shadow: 0 5px 15px rgba(155, 89, 182, 0.1);
+      }
+      .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .user-name {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+      }
+      .user-stats {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .stat-badge {
+        background: #667eea;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+      }
+      .user-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      .admin-action-btn {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: transform 0.2s;
+      }
+      .admin-action-btn:hover {
+        transform: translateY(-1px);
+      }
+      .edit-btn {
+        background: #3498db;
+        color: white;
+      }
+      .delete-btn {
+        background: #e74c3c;
+        color: white;
+      }
+      .progress-btn {
+        background: #27ae60;
+        color: white;
+      }
+      .user-progress {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e0e0e0;
+      }
+      .progress-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .progress-level {
+        font-weight: bold;
+        color: #555;
+      }
+      .progress-percentage {
+        color: #27ae60;
+        font-weight: bold;
+      }
+      /* Result Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+      .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+      }
+      .result-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+      }
+      .result-title {
+        font-size: 2rem;
+        margin-bottom: 15px;
+      }
+      .xp-earned {
+        color: #27ae60;
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+      }
+      /* Edit Modal */
+      .edit-modal .modal-content {
+        max-width: 500px;
+        text-align: left;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: #9b59b6;
+      }
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 30px;
+      }
+      .cancel-btn {
+        background: #6c757d;
+      }
+      .save-btn {
+        background: #27ae60;
+      }
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+        .header {
+          flex-direction: column;
+          gap: 15px;
+          text-align: center;
+        }
+
+        .roadmap-container {
+          padding: 20px 10px;
+        }
+
+        .roadmap-path {
+          display: none;
+        }
+
+        .level-node {
+          flex-direction: column !important;
+          margin-bottom: 40px;
+        }
+
+        .level-node:nth-child(odd) .level-card-roadmap,
+        .level-node:nth-child(even) .level-card-roadmap {
+          margin: 0;
+          width: 100%;
+          max-width: 300px;
+        }
+
+        .connection-dot {
+          display: none;
+        }
+
+        .quiz-header {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .quiz-progress {
+          margin: 0;
+          width: 100%;
+        }
+        .quiz-controls {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .quiz-controls .btn {
+          width: 100%;
+        }
+        .user-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+        .user-actions {
+          flex-wrap: wrap;
+        }
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      .level-node:nth-child(1) .level-card-roadmap {
+        animation-delay: 0.1s;
+      }
+      .level-node:nth-child(2) .level-card-roadmap {
+        animation-delay: 0.2s;
+      }
+      .level-node:nth-child(3) .level-card-roadmap {
+        animation-delay: 0.3s;
+      }
+      .level-node:nth-child(4) .level-card-roadmap {
+        animation-delay: 0.4s;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Interface -->
+    <div id="loginContainer" class="login-container">
+      <div class="login-form">
+        <div class="logo">
+        <div class="subtitle">Lerne Python!</div>
+        <input type="text" id="usernameInput" placeholder="Benutzername" />
+        <input type="password" id="passwordInput" placeholder="Passwort" />
+        <div>
+          <button class="btn" onclick="login()">Anmelden</button>
+          <button class="btn" onclick="register()">Registrieren</button>
+        </div>
+      </div>
+    </div>
+    <!-- Main App -->
+    <div id="mainApp" class="main-app">
+      <div class="container">
+        <!-- Header -->
+        <div class="header">
+          <div>
+            <h1 class="logo">PyLearn</h1>
+          </div>
+          <div class="user-info">
+            <div class="level-badge" id="userLevel">Level 1</div>
+            <div class="xp-display" id="userXP">0 XP</div>
+            <span id="username">Benutzer</span>
+            <button
+              class="admin-btn"
+              id="adminBtn"
+              onclick="showAdminPanel()"
+              style="display: none"
+            >
+              Admin
+            </button>
+            <button class="logout-btn" onclick="logout()">
+              <img
+                src="image.png"
+                alt="Logout"
+                style="
+                  height: 40px;
+                  width: 40px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                  background: #fff;
+                "
+              />
+            </button>
+          </div>
+        </div>
+        <!-- Roadmap Overview -->
+        <div id="levelsView" class="roadmap-container">
+          <!-- Roadmap path -->
+          <div class="roadmap-path"></div>
+          <!-- Levels will be generated dynamically -->
+        </div>
+        <!-- Quiz Interface -->
+        <div id="quizContainer" class="quiz-container">
+          <div class="quiz-header">
+            <button class="btn back-btn" onclick="backToLevels()">
+              ← Zurück
+            </button>
+            <div class="quiz-progress">
+              <div
+                id="quizProgressFill"
+                class="quiz-progress-fill"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span id="questionCounter">1/10</span>
+          </div>
+          <div class="question-container">
+            <div id="questionText" class="question"></div>
+            <div id="codeBlock" class="code-block hidden"></div>
+            <div id="optionsContainer" class="options"></div>
+          </div>
+          <div class="quiz-controls">
+            <div></div>
+            <button
+              id="checkBtn"
+              class="btn check-btn"
+              onclick="checkAnswer()"
+              disabled
+            >
+              Prüfen
+            </button>
+            <button
+              id="nextBtn"
+              class="btn next-btn hidden"
+              onclick="nextQuestion()"
+            >
+              Weiter
+            </button>
+          </div>
+        </div>
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel">
+          <div class="admin-header">
+            <div class="admin-title">Admin Panel</div>
+            <button class="btn back-btn" onclick="backToLevels()">
+              ← Zurück
+            </button>
+          </div>
+          <div class="search-container">
+            <input
+              type="text"
+              id="userSearchInput"
+              class="search-input"
+              placeholder="Benutzer suchen..."
+              onkeyup="filterUsers()"
+            />
+          </div>
+          <div id="usersGrid" class="users-grid">
+            <!-- Users will be generated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal">
+      <div class="modal-content">
+        <div id="resultIcon" class="result-icon">🎉</div>
+        <div id="resultTitle" class="result-title">Glückwunsch!</div>
+        <div id="resultMessage"></div>
+        <div id="xpEarned" class="xp-earned">+50 XP</div>
+        <button class="btn" onclick="closeResultModal()">Weiter</button>
+      </div>
+    </div>
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal edit-modal">
+      <div class="modal-content">
+        <h2>Benutzer bearbeiten</h2>
+        <div class="form-group">
+          <label class="form-label">Benutzername:</label>
+          <input type="text" id="editUsername" class="form-input" readonly />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Neues Passwort:</label>
+          <input type="password" id="editPassword" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Level:</label>
+          <input type="number" id="editLevel" class="form-input" min="1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">XP:</label>
+          <input type="number" id="editXP" class="form-input" min="0" />
+        </div>
+        <div class="form-actions">
+          <button class="btn cancel-btn" onclick="closeEditModal()">
+            Abbrechen
+          </button>
+          <button class="btn save-btn" onclick="saveUserChanges()">
+            Speichern
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Application State
+      let currentUser = null;
+      let currentLevel = 0;
+      let currentQuestion = 0;
+      let score = 0;
+      let selectedAnswer = null;
+      let userAnswers = [];
+      let currentEditingUser = null;
+      // Level Data
+      const levels = [
+        {
+          id: 0,
+          title: "Python Grundlagen",
+          icon: "",
+          description: "Lerne die Basics von Python",
+          questions: [
+            {
+              question: "Was ist Python?",
+              options: [
+                "Eine Schlange",
+                "Eine Programmiersprache",
+                "Ein Betriebssystem",
+                "Ein Webbrowser",
+              ],
+              correct: 1,
+              explanation: "Python ist eine beliebte Programmiersprache!",
+            },
+            {
+              question: "Wie gibst du Text in Python aus?",
+              code: 'print("Hello World")',
+              options: [
+                'print("Hello World")',
+                'console.log("Hello World")',
+                'echo "Hello World"',
+                'System.out.println("Hello World")',
+              ],
+              correct: 0,
+              explanation:
+                "print() ist die Funktion für Textausgabe in Python!",
+            },
+            {
+              question: "Welcher Datentyp ist '123'?",
+              options: ["Integer", "Float", "String", "Boolean"],
+              correct: 2,
+              explanation: "Zahlen in Anführungszeichen sind Strings!",
+            },
+          ],
+        },
+        {
+          id: 1,
+          title: "Variablen & Datentypen",
+          icon: "",
+          description: "Arbeite mit Variablen und verschiedenen Datentypen",
+          questions: [
+            {
+              question: "Wie erstellst du eine Variable in Python?",
+              options: [
+                "var name = 'Python'",
+                "name = 'Python'",
+                "let name = 'Python'",
+                "String name = 'Python'",
+              ],
+              correct: 1,
+              explanation:
+                "In Python brauchst du kein spezielles Keyword für Variablen!",
+            },
+            {
+              question: "Was ist der Typ von 3.14?",
+              options: ["int", "str", "float", "bool"],
+              correct: 2,
+              explanation: "Dezimalzahlen sind vom Typ float!",
+            },
+            {
+              question: "Wie konvertierst du einen String zu Integer?",
+              code: 'number = "42"\nresult = ?',
+              options: [
+                "int(number)",
+                "number.toInt()",
+                "Integer.parse(number)",
+                "convert(number, int)",
+              ],
+              correct: 0,
+              explanation: "int() konvertiert Strings zu Ganzzahlen!",
+            },
+          ],
+        },
+        {
+          id: 2,
+          title: "Listen & Schleifen",
+          icon: "",
+          description: "Lerne Listen und Wiederholungen",
+          questions: [
+            {
+              question: "Wie erstellst du eine leere Liste?",
+              options: [
+                "list = {}",
+                "list = []",
+                "list = ()",
+                "list = new List()",
+              ],
+              correct: 1,
+              explanation: "Eckige Klammern [] erstellen Listen!",
+            },
+            {
+              question: "Wie fügst du ein Element zu einer Liste hinzu?",
+              code: 'fruits = ["apple", "banana"]\n# Füge "orange" hinzu',
+              options: [
+                "fruits.add('orange')",
+                "fruits.append('orange')",
+                "fruits.push('orange')",
+                "fruits.insert('orange')",
+              ],
+              correct: 1,
+              explanation: "append() fügt Elemente am Ende einer Liste hinzu!",
+            },
+            {
+              question: "Welche Schleife durchläuft eine Liste?",
+              code: "numbers = [1, 2, 3, 4, 5]",
+              options: [
+                "for number in numbers:",
+                "foreach number in numbers:",
+                "while number in numbers:",
+                "loop number in numbers:",
+              ],
+              correct: 0,
+              explanation: "for...in ist die Standard-Schleife für Listen!",
+            },
+          ],
+        },
+        {
+          id: 3,
+          title: "Funktionen",
+          icon: "⚙️",
+          description: "Erstelle wiederverwendbare Funktionen",
+          questions: [
+            {
+              question: "Wie definierst du eine Funktion?",
+              options: [
+                "function greet():",
+                "def greet():",
+                "func greet():",
+                "define greet():",
+              ],
+              correct: 1,
+              explanation: "def ist das Keyword für Funktionsdefinitionen!",
+            },
+            {
+              question: "Wie gibst du einen Wert aus einer Funktion zurück?",
+              code: "def add(a, b):\n    result = a + b\n    # Gib result zurück",
+              options: [
+                "give result",
+                "return result",
+                "output result",
+                "send result",
+              ],
+              correct: 1,
+              explanation: "return gibt Werte aus Funktionen zurück!",
+            },
+            {
+              question: "Was ist ein Parameter?",
+              code: 'def greet(name):\n    print(f"Hello {name}")',
+              options: [
+                "Der Funktionsname",
+                "Die Eingabe der Funktion",
+                "Die Ausgabe der Funktion",
+                "Ein Kommentar",
+              ],
+              correct: 1,
+              explanation: "Parameter sind die Eingaben einer Funktion!",
+            },
+          ],
+        },
+      ];
+      // Initialize App
+      window.onload = function () {
+        loadUserData();
+        if (currentUser) {
+          showMainApp();
+        }
+      };
+      // User Management
+      function login() {
+        const username = document.getElementById("usernameInput").value.trim();
+        const password = document.getElementById("passwordInput").value;
+        if (!username || !password) {
+          alert("Bitte fülle alle Felder aus!");
+          return;
+        }
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        if (users[username] && users[username].password === password) {
+          currentUser = users[username];
+          currentUser.username = username;
+          currentUser.isAdmin = username === "Ata"; // Admin check
+          localStorage.setItem(
+            "pylearn_current_user",
+            JSON.stringify(currentUser)
+          );
+          showMainApp();
+        } else {
+          alert("Ungültiger Benutzername oder Passwort!");
+        }
+      }
+      function register() {
+        const username = document.getElementById("usernameInput").value.trim();
+        const password = document.getElementById("passwordInput").value;
+        if (!username || !password) {
+          alert("Bitte fülle alle Felder aus!");
+          return;
+        }
+        if (username.length < 3) {
+          alert("Benutzername muss mindestens 3 Zeichen lang sein!");
+          return;
+        }
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        if (users[username]) {
+          alert("Benutzername bereits vergeben!");
+          return;
+        }
+        // Create new user
+        const newUser = {
+          password: password,
+          level: 1,
+          xp: 0,
+          completedLevels: [],
+          levelProgress: {},
+          isAdmin: username === "Ata", // Admin check
+        };
+        users[username] = newUser;
+        localStorage.setItem("pylearn_users", JSON.stringify(users));
+        currentUser = newUser;
+        currentUser.username = username;
+        localStorage.setItem(
+          "pylearn_current_user",
+          JSON.stringify(currentUser)
+        );
+        alert("Registrierung erfolgreich!");
+        showMainApp();
+      }
+      function logout() {
+        localStorage.removeItem("pylearn_current_user");
+        currentUser = null;
+        document.getElementById("loginContainer").style.display = "flex";
+        document.getElementById("mainApp").style.display = "none";
+        document.getElementById("usernameInput").value = "";
+        document.getElementById("passwordInput").value = "";
+      }
+      function loadUserData() {
+        currentUser = JSON.parse(
+          localStorage.getItem("pylearn_current_user") || "null"
+        );
+        if (currentUser) {
+          // Only set admin flag if username is exactly "Ata"
+          currentUser.isAdmin = currentUser.username === "Ata";
+        }
+      }
+      function saveUserData() {
+        if (!currentUser) return;
+        localStorage.setItem(
+          "pylearn_current_user",
+          JSON.stringify(currentUser)
+        );
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        const username = currentUser.username;
+        if (users[username]) {
+          users[username] = { ...currentUser };
+          delete users[username].username;
+          delete users[username].isAdmin;
+          localStorage.setItem("pylearn_users", JSON.stringify(users));
+        }
+      }
+      function showMainApp() {
+        document.getElementById("loginContainer").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+        // Always show levels view first, hide admin panel
+        document.getElementById("levelsView").style.display = "block";
+        document.getElementById("adminPanel").style.display = "none";
+        document.getElementById("quizContainer").style.display = "none";
+        updateUserDisplay();
+        renderLevels();
+        // Show admin button if user is admin
+        const adminBtn = document.getElementById("adminBtn");
+        if (
+          currentUser &&
+          currentUser.isAdmin &&
+          currentUser.username === "Ata"
+        ) {
+          adminBtn.style.display = "block";
+        } else {
+          adminBtn.style.display = "none";
+        }
+      }
+      function updateUserDisplay() {
+        document.getElementById("username").textContent = currentUser.username;
+        document.getElementById(
+          "userLevel"
+        ).textContent = `Level ${currentUser.level}`;
+        document.getElementById("userXP").textContent = `${currentUser.xp} XP`;
+      }
+      // Level Management - New Roadmap Design
+      function renderLevels() {
+        const container = document.getElementById("levelsView");
+        container.innerHTML = '<div class="roadmap-path"></div>';
+
+        levels.forEach((level, index) => {
+          const isUnlocked =
+            index === 0 || currentUser.completedLevels.includes(index - 1);
+          const isCompleted = currentUser.completedLevels.includes(index);
+          const progress = currentUser.levelProgress[index] || 0;
+
+          const levelNode = document.createElement("div");
+          levelNode.className = `level-node ${!isUnlocked ? "locked" : ""} ${
+            isCompleted ? "completed" : ""
+          }`;
+
+          levelNode.innerHTML = `
+            <div class="level-card-roadmap ${!isUnlocked ? "locked" : ""} ${
+            isCompleted ? "completed" : ""
+          }" ${isUnlocked ? `onclick="startLevel(${index})"` : ""}>
+              <div class="level-icon-large">${
+                isUnlocked ? level.icon : ""
+              }</div>
+              <div class="level-title-roadmap">${level.title}</div>
+              <div class="level-description">${level.description}</div>
+              <div class="level-progress-roadmap">
+                <div class="level-progress-fill" style="width: ${
+                  isCompleted ? 100 : progress
+                }%"></div>
+              </div>
+              <div class="level-status ${
+                isCompleted ? "completed" : isUnlocked ? "available" : "locked"
+              }">
+                ${
+                  isCompleted
+                    ? "Abgeschlossen!"
+                    : isUnlocked
+                    ? "Verfügbar"
+                    : "Gesperrt"
+                }
+              </div>
+            </div>
+            <div class="connection-dot"></div>
+          `;
+
+          container.appendChild(levelNode);
+        });
+      }
+      function startLevel(levelIndex) {
+        if (levelIndex >= levels.length) return;
+        currentLevel = levelIndex;
+        currentQuestion = 0;
+        score = 0;
+        userAnswers = [];
+        document.getElementById("levelsView").style.display = "none";
+        document.getElementById("adminPanel").style.display = "none";
+        document.getElementById("quizContainer").style.display = "block";
+        showQuestion();
+      }
+      function backToLevels() {
+        document.getElementById("levelsView").style.display = "block";
+        document.getElementById("quizContainer").style.display = "none";
+        document.getElementById("adminPanel").style.display = "none";
+      }
+      // Admin Panel Functions
+      function showAdminPanel() {
+        // Double check admin permissions
+        if (
+          !currentUser ||
+          !currentUser.isAdmin ||
+          currentUser.username !== "Ata"
+        ) {
+          alert("Zugriff verweigert!");
+          return;
+        }
+        document.getElementById("levelsView").style.display = "none";
+        document.getElementById("quizContainer").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        renderUsers();
+      }
+      function renderUsers() {
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        const container = document.getElementById("usersGrid");
+        container.innerHTML = "";
+        Object.keys(users).forEach((username) => {
+          const user = users[username];
+          user.username = username;
+          const userCard = document.createElement("div");
+          userCard.className = "user-card";
+          userCard.dataset.username = username.toLowerCase();
+          const completedCount = user.completedLevels
+            ? user.completedLevels.length
+            : 0;
+          const totalLevels = levels.length;
+          userCard.innerHTML = `
+            <div class="user-header">
+              <div class="user-name">${username}${
+            username === "Ata" ? "" : ""
+          }</div>
+              <div class="user-stats">
+                <div class="stat-badge">Level ${user.level || 1}</div>
+                <div class="stat-badge">${user.xp || 0} XP</div>
+                <div class="stat-badge">${completedCount}/${totalLevels} Level</div>
+              </div>
+            </div>
+            <div class="user-actions">
+              <button class="admin-action-btn edit-btn" onclick="editUser('${username}')">
+                Bearbeiten
+              </button>
+              <button class="admin-action-btn progress-btn" onclick="toggleUserProgress('${username}')">
+                Fortschritt
+              </button>
+              ${
+                username !== "Ata"
+                  ? `<button class="admin-action-btn delete-btn" onclick="deleteUser('${username}')">🗑️ Löschen</button>`
+                  : ""
+              }
+            </div>
+            <div class="user-progress" id="progress-${username}" style="display: none;">
+              ${renderUserProgress(user)}
+            </div>
+          `;
+          container.appendChild(userCard);
+        });
+      }
+      function renderUserProgress(user) {
+        let progressHTML = "";
+        levels.forEach((level, index) => {
+          const isCompleted =
+            user.completedLevels && user.completedLevels.includes(index);
+          const progress = user.levelProgress
+            ? user.levelProgress[index] || 0
+            : 0;
+          progressHTML += `
+            <div class="progress-item">
+              <span class="progress-level">${level.title}</span>
+              <span class="progress-percentage">
+                ${isCompleted ? "100%" : `${Math.round(progress)}%`}
+              </span>
+            </div>
+          `;
+        });
+        return progressHTML || "<p>Noch kein Fortschritt vorhanden.</p>";
+      }
+      function filterUsers() {
+        const searchTerm = document
+          .getElementById("userSearchInput")
+          .value.toLowerCase();
+        const userCards = document.querySelectorAll(".user-card");
+        userCards.forEach((card) => {
+          const username = card.dataset.username;
+          if (username.includes(searchTerm)) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+      function editUser(username) {
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        const user = users[username];
+        if (!user) {
+          alert("Benutzer nicht gefunden!");
+          return;
+        }
+        currentEditingUser = username;
+        document.getElementById("editUsername").value = username;
+        document.getElementById("editPassword").value = "";
+        document.getElementById("editLevel").value = user.level || 1;
+        document.getElementById("editXP").value = user.xp || 0;
+        document.getElementById("editUserModal").style.display = "block";
+      }
+      function closeEditModal() {
+        document.getElementById("editUserModal").style.display = "none";
+        currentEditingUser = null;
+      }
+      function saveUserChanges() {
+        if (!currentEditingUser) return;
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        const user = users[currentEditingUser];
+        if (!user) {
+          alert("Benutzer nicht gefunden!");
+          return;
+        }
+        const newPassword = document.getElementById("editPassword").value;
+        const newLevel = parseInt(document.getElementById("editLevel").value);
+        const newXP = parseInt(document.getElementById("editXP").value);
+        // Validation
+        if (newLevel < 1) {
+          alert("Level muss mindestens 1 sein!");
+          return;
+        }
+        if (newXP < 0) {
+          alert("XP kann nicht negativ sein!");
+          return;
+        }
+        // Update user data
+        if (newPassword) {
+          user.password = newPassword;
+        }
+        user.level = newLevel;
+        user.xp = newXP;
+        // Save changes
+        localStorage.setItem("pylearn_users", JSON.stringify(users));
+        // Update current user if editing self
+        if (currentUser && currentUser.username === currentEditingUser) {
+          currentUser.level = newLevel;
+          currentUser.xp = newXP;
+          if (newPassword) {
+            currentUser.password = newPassword;
+          }
+          localStorage.setItem(
+            "pylearn_current_user",
+            JSON.stringify(currentUser)
+          );
+          updateUserDisplay();
+        }
+        closeEditModal();
+        renderUsers();
+        alert("Benutzer erfolgreich aktualisiert!");
+      }
+      function deleteUser(username) {
+        if (username === "Ata") {
+          alert("Admin-Account kann nicht gelöscht werden!");
+          return;
+        }
+        if (
+          !confirm(`Möchtest du den Benutzer "${username}" wirklich löschen?`)
+        ) {
+          return;
+        }
+        const users = JSON.parse(localStorage.getItem("pylearn_users") || "{}");
+        delete users[username];
+        localStorage.setItem("pylearn_users", JSON.stringify(users));
+        renderUsers();
+        alert("Benutzer erfolgreich gelöscht!");
+      }
+      function toggleUserProgress(username) {
+        const progressDiv = document.getElementById(`progress-${username}`);
+        if (progressDiv.style.display === "none") {
+          progressDiv.style.display = "block";
+        } else {
+          progressDiv.style.display = "none";
+        }
+      }
+      // Quiz Logic
+      function showQuestion() {
+        const level = levels[currentLevel];
+        const question = level.questions[currentQuestion];
+        document.getElementById("questionText").textContent = question.question;
+        document.getElementById("questionCounter").textContent = `${
+          currentQuestion + 1
+        }/${level.questions.length}`;
+        // Update progress bar
+        const progress = (currentQuestion / level.questions.length) * 100;
+        document.getElementById(
+          "quizProgressFill"
+        ).style.width = `${progress}%`;
+        // Show code block if present
+        const codeBlock = document.getElementById("codeBlock");
+        if (question.code) {
+          codeBlock.textContent = question.code;
+          codeBlock.classList.remove("hidden");
+        } else {
+          codeBlock.classList.add("hidden");
+        }
+        // Render options
+        const optionsContainer = document.getElementById("optionsContainer");
+        optionsContainer.innerHTML = "";
+        question.options.forEach((option, index) => {
+          const optionElement = document.createElement("div");
+          optionElement.className = "option";
+          optionElement.textContent = option;
+          optionElement.onclick = () => selectAnswer(index);
+          optionsContainer.appendChild(optionElement);
+        });
+        // Reset button states
+        selectedAnswer = null;
+        document.getElementById("checkBtn").disabled = true;
+        document.getElementById("checkBtn").classList.remove("hidden");
+        document.getElementById("nextBtn").classList.add("hidden");
+      }
+      function selectAnswer(index) {
+        selectedAnswer = index;
+        // Update visual selection
+        const options = document.querySelectorAll(".option");
+        options.forEach((option, i) => {
+          option.classList.remove("selected");
+          if (i === index) {
+            option.classList.add("selected");
+          }
+        });
+        document.getElementById("checkBtn").disabled = false;
+      }
+      function checkAnswer() {
+        if (selectedAnswer === null) return;
+        const level = levels[currentLevel];
+        const question = level.questions[currentQuestion];
+        const isCorrect = selectedAnswer === question.correct;
+        userAnswers.push({
+          question: currentQuestion,
+          selected: selectedAnswer,
+          correct: isCorrect,
+        });
+        if (isCorrect) {
+          score++;
+        }
+        // Show correct/incorrect styling
+        const options = document.querySelectorAll(".option");
+        options.forEach((option, i) => {
+          option.onclick = null; // Disable further clicks
+          if (i === question.correct) {
+            option.classList.add("correct");
+          } else if (i === selectedAnswer && !isCorrect) {
+            option.classList.add("incorrect");
+          }
+        });
+        document.getElementById("checkBtn").classList.add("hidden");
+        document.getElementById("nextBtn").classList.remove("hidden");
+      }
+      function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion >= levels[currentLevel].questions.length) {
+          finishLevel();
+        } else {
+          showQuestion();
+        }
+      }
+      function finishLevel() {
+        const level = levels[currentLevel];
+        const totalQuestions = level.questions.length;
+        const percentage = Math.round((score / totalQuestions) * 100);
+        // Calculate XP (minimum 10, maximum 100 per level)
+        const baseXP = 30;
+        const bonusXP = Math.round((percentage / 100) * 70);
+        const earnedXP = baseXP + bonusXP;
+        // Update user progress
+        currentUser.xp += earnedXP;
+        // Check if level is completed (need at least 70% to pass)
+        const passed = percentage >= 70;
+        if (passed && !currentUser.completedLevels.includes(currentLevel)) {
+          currentUser.completedLevels.push(currentLevel);
+          // Level up if completed enough levels
+          const requiredLevels = Math.floor(currentUser.level * 1.5);
+          if (currentUser.completedLevels.length >= requiredLevels) {
+            currentUser.level++;
+          }
+        }
+        // Update level progress
+        currentUser.levelProgress[currentLevel] = percentage;
+        saveUserData();
+        updateUserDisplay();
+        // Show result modal
+        showResultModal(passed, earnedXP, percentage, score, totalQuestions);
+      }
+      function showResultModal(passed, earnedXP, percentage, score, total) {
+        const modal = document.getElementById("resultModal");
+        const icon = document.getElementById("resultIcon");
+        const title = document.getElementById("resultTitle");
+        const message = document.getElementById("resultMessage");
+        const xpDisplay = document.getElementById("xpEarned");
+        if (passed) {
+          icon.textContent = "🎉";
+          title.textContent = "Glückwunsch!";
+          message.innerHTML = `Du hast das Level erfolgreich abgeschlossen!<br>
+                                   Richtige Antworten: ${score}/${total} (${percentage}%)`;
+        } else {
+          icon.textContent = "😔";
+          title.textContent = "Nicht bestanden";
+          message.innerHTML = `Du brauchst mindestens 70% um das Level zu bestehen.<br>
+                                   Richtige Antworten: ${score}/${total} (${percentage}%)<br>
+                                   Versuche es nochmal!`;
+        }
+        xpDisplay.textContent = `+${earnedXP} XP`;
+        modal.style.display = "block";
+      }
+      function closeResultModal() {
+        document.getElementById("resultModal").style.display = "none";
+        backToLevels();
+        renderLevels(); // Refresh to show updated progress
+      }
+      // Keyboard shortcuts
+      document.addEventListener("keydown", function (e) {
+        if (
+          document.getElementById("quizContainer").style.display === "block"
+        ) {
+          if (e.key === "Enter") {
+            const checkBtn = document.getElementById("checkBtn");
+            const nextBtn = document.getElementById("nextBtn");
+            if (!checkBtn.classList.contains("hidden") && !checkBtn.disabled) {
+              checkAnswer();
+            } else if (!nextBtn.classList.contains("hidden")) {
+              nextQuestion();
+            }
+          }
+          // Number keys for selecting options
+          if (e.key >= "1" && e.key <= "4") {
+            const optionIndex = parseInt(e.key) - 1;
+            const options = document.querySelectorAll(".option");
+            if (options[optionIndex] && selectedAnswer === null) {
+              selectAnswer(optionIndex);
+            }
+          }
+        }
+      });
+      // Close modal when clicking outside
+      window.addEventListener("click", function (e) {
+        const resultModal = document.getElementById("resultModal");
+        const editModal = document.getElementById("editUserModal");
+        if (e.target === resultModal) {
+          closeResultModal();
+        }
+        if (e.target === editModal) {
+          closeEditModal();
+        }
+      });
+      // Enter key for login
+      document.addEventListener("keydown", function (e) {
+        if (
+          e.key === "Enter" &&
+          document.getElementById("loginContainer").style.display !== "none"
+        ) {
+          login();
+        }
+      });
+      // Enhanced sound effects
+      function playSound(type) {
+        if (
+          typeof AudioContext === "undefined" &&
+          typeof webkitAudioContext === "undefined"
+        ) {
+          return;
+        }
+        const audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        switch (type) {
+          case "correct":
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(
+              1000,
+              audioContext.currentTime + 0.1
+            );
+            break;
+          case "incorrect":
+            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(
+              200,
+              audioContext.currentTime + 0.1
+            );
+            break;
+          case "levelComplete":
+            oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(
+              659,
+              audioContext.currentTime + 0.1
+            );
+            oscillator.frequency.setValueAtTime(
+              784,
+              audioContext.currentTime + 0.2
+            );
+            break;
+        }
+        oscillator.type = "sine";
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.5
+        );
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      }
+      // Enhanced checkAnswer function with sound effects
+      const originalCheckAnswer = checkAnswer;
+      checkAnswer = function () {
+        originalCheckAnswer();
+        const level = levels[currentLevel];
+        const question = level.questions[currentQuestion];
+        const isCorrect = selectedAnswer === question.correct;
+        setTimeout(() => {
+          playSound(isCorrect ? "correct" : "incorrect");
+        }, 100);
+      };
+      // Enhanced finishLevel function with sound effects
+      const originalFinishLevel = finishLevel;
+      finishLevel = function () {
+        originalFinishLevel();
+        setTimeout(() => {
+          playSound("levelComplete");
+        }, 500);
+      };
+      // Debug functions for development
+      window.debugFunctions = {
+        addXP: (amount) => {
+          if (currentUser) {
+            currentUser.xp += amount;
+            saveUserData();
+            updateUserDisplay();
+            console.log(`Added ${amount} XP`);
+          }
+        },
+        completeLevel: (levelIndex) => {
+          if (
+            currentUser &&
+            !currentUser.completedLevels.includes(levelIndex)
+          ) {
+            currentUser.completedLevels.push(levelIndex);
+            currentUser.levelProgress[levelIndex] = 100;
+            saveUserData();
+            renderLevels();
+            console.log(`Completed level ${levelIndex}`);
+          }
+        },
+        showUserData: () => console.log(currentUser),
+      };
+      console.log(
+        "🐍 PyLearn Debug Functions available:",
+        Object.keys(window.debugFunctions)
+      );
+    </script>
+  </body>
+</html>
