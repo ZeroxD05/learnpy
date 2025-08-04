@@ -14,7 +14,23 @@
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background-color: #333;
         min-height: 100vh;
-        color: #333;
+        margin: 0;
+        padding: 20px;
+
+        /* Subtiles Kästchen-Muster */
+        background-image: 
+                /* Kleine Kästchen */ linear-gradient(
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          /* Leichte Riffelung durch größere Kästchen */
+            linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+
+        background-size: 12px 12px, 12px 12px, 48px 48px, 48px 48px;
+
+        background-position: 0 0, 0 0, 0 0, 0 0;
       }
       .container {
         max-width: 1200px;
@@ -670,7 +686,11 @@
       <div class="login-form">
         <div class="logo">Learn</div>
         <div class="subtitle">Lerne Python!</div>
-        <input type="text" id="usernameInput" placeholder="Benutzername" />
+        <input
+          type="text"
+          id="usernameInput"
+          placeholder="Benutzername (NameKlasse)"
+        />
         <input type="password" id="passwordInput" placeholder="Passwort" />
         <div>
           <button class="btn" onclick="login()">Anmelden</button>
@@ -684,7 +704,7 @@
         <!-- Header -->
         <div class="header">
           <div>
-            <h1 class="logo">PyLearn</h1>
+            <h1 class="logo" style="color: white">PyLearn</h1>
           </div>
           <div class="user-info">
             <div class="level-badge" id="userLevel">Level 1</div>
